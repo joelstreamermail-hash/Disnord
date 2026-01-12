@@ -1,0 +1,11 @@
+﻿<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Server erstellen</title><link rel="stylesheet" href="/css/style.css"></head>
+<body><div class="center-screen"><div class="card">
+    <h2>Neuer Server</h2>
+    <p>Erstelle einen eigenen Bereich für deine Freunde.</p>
+    <input id="sn" placeholder="Server Name (z.B. Gaming-Zone)">
+    <button class="btn" onclick="c()">Server erstellen</button>
+    <button class="btn" style="background:#eee; color:#333; margin-top:10px;" onclick="window.location.href='/'">Abbrechen</button>
+</div></div><script src="/socket.io/socket.io.js"></script><script>
+    const s=io();
+    function c(){ const n=document.getElementById('sn').value; if(n){ s.emit('create-srv', n); window.location.href='/'; } }
+</script></body></html>

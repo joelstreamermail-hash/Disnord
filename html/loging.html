@@ -1,0 +1,12 @@
+﻿<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Login - Disnord</title><link rel="stylesheet" href="/css/style.css"></head>
+<body><div class="center-screen"><div class="card">
+    <div class="brand" style="justify-content:center; margin-bottom:20px; font-size:2em">D</div>
+    <h2>Willkommen zurück</h2>
+    <p style="color:var(--text-muted); margin-bottom:20px;">Gib deinen Namen ein, um zu chatten.</p>
+    <input id="u" placeholder="Benutzername">
+    <button class="btn" onclick="l()">Einloggen</button>
+    <a href="/register" style="display:block; margin-top:15px; color:var(--accent); text-decoration:none; font-size:0.9em">Noch kein Konto? Registrieren</a>
+</div></div><script>
+    function l(){ const n=document.getElementById('u').value; if(n){ localStorage.setItem('disnord_user', n); window.location.href='/'; } }
+    document.getElementById('u').onkeypress=(e)=>{if(e.key==='Enter')l()}
+</script></body></html>

@@ -1,0 +1,14 @@
+﻿<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Einstellungen</title><link rel="stylesheet" href="/css/style.css"></head>
+<body><div class="center-screen"><div class="card">
+    <h2>Dein Profil</h2>
+    <div class="avatar" style="width:80px; height:80px; margin: 0 auto 20px auto; background:var(--accent);"></div>
+    <label style="display:block; text-align:left; font-size:0.8em; margin-bottom:5px; color:var(--text-muted)">Anzeigename</label>
+    <input id="nn" placeholder="Name ändern">
+    <button class="btn" onclick="s()">Speichern</button>
+    <button class="btn" style="background:#ff4b2b; margin-top:30px;" onclick="o()">Logout</button>
+    <button class="btn" style="background:#eee; color:#333; margin-top:10px;" onclick="window.location.href='/'">Zurück</button>
+</div></div><script>
+    document.getElementById('nn').value = localStorage.getItem('disnord_user');
+    function s(){ localStorage.setItem('disnord_user', document.getElementById('nn').value); window.location.href='/'; }
+    function o(){ localStorage.clear(); window.location.href='/login'; }
+</script></body></html>
