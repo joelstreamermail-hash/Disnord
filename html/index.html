@@ -1,34 +1,48 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Disnord</title><link rel="stylesheet" href="/css/style.css"></head>
+<head>
+    <meta charset="UTF-8">
+    <title>Disnord - Home</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/index.css">
+</head>
 <body>
-    <div class="app">
-        <div class="header-bar"><div class="brand">Disnord</div></div>
-        <div class="sidebar-left"><div id="server-list"></div></div>
-        <div class="sidebar-mid"><div id="channel-list"># allgemein</div></div>
-        <div class="main-content">
-            <div id="chat-history"></div>
-            <div class="msg-box">
-                <input type="text" id="msg-in" class="msg-input" placeholder="Nachricht...">
-                <button id="send-btn" class="btn">Senden</button>
-            </div>
+    <nav class="sidebar-servers">
+        <div class="srv-icon home-active" onclick="location.href='/'">🏠</div>
+        <div class="srv-icon add-btn" onclick="location.href='/server-create'">+</div>
+    </nav>
+
+    <aside class="sidebar-main">
+        <div class="nav-section">
+            <button class="nav-btn" onclick="location.href='/direct-messages'">📬 Direktnachrichten</button>
         </div>
-    </div>
+        <div class="channel-list">
+            <h3>Kanäle</h3>
+            <div class="channel active"># allgemein</div>
+        </div>
+        <div class="user-bar" onclick="location.href='/settings'">
+            <div id="my-av-box" class="av-small"></div>
+            <div class="user-info">
+                <span id="my-name">Lädt...</span>
+                <small>Online</small>
+            </div>
+            <div class="settings-gear">⚙️</div>
+        </div>
+    </aside>
+
+    <main class="chat-area">
+        <header class="chat-header">
+            <h2># allgemein</h2>
+        </header>
+        <div id="chat-box">
+            </div>
+        <div class="input-area">
+            <input id="in" placeholder="Nachricht an #allgemein">
+            <button id="btn">➤</button>
+        </div>
+    </main>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const user = localStorage.getItem('disnord_user') || "Gast";
-        socket.emit('join-chat', user);
-        document.getElementById('send-btn').onclick = () => {
-            const inp = document.getElementById('msg-in');
-            socket.emit('send-msg', {user, text: inp.value, target: 'allgemein'});
-            inp.value = '';
-        };
-        socket.on('receive-msg', (msg) => {
-            const div = document.createElement('div');
-            div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
-            document.getElementById('chat-history').appendChild(div);
-        });
-    </script>
+    <script src="/js/index.js"></script>
 </body>
 </html>

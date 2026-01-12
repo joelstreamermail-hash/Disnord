@@ -1,0 +1,93 @@
+.sidebar-servers {
+    width: 72px;
+    background-color: var(--bg-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15px;
+    gap: 12px;
+    border-right: 1px solid #222;
+}
+
+.srv-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--bg-item);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: 0.2s;
+}
+
+.srv-icon:hover {
+    border-radius: 15px;
+    background-color: var(--accent);
+}
+
+.sidebar-main {
+    width: 240px;
+    background-color: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.nav-btn {
+    background: var(--bg-item);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-item);
+    margin: 10px;
+    border-radius: 15px;
+}
+
+#chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.input-area {
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#in {
+    flex: 1;
+    background: var(--bg-panel);
+    border: none;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+#btn {
+    background: var(--accent);
+    color: white;
+    border-radius: 10px;
+    padding: 0 20px;
+}
+
+.user-bar {
+    margin-top: auto;
+    background: var(--bg-main);
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.av-small { width: 32px; height: 32px; background: #555; border-radius: 50%; background-size: cover; }

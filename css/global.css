@@ -1,0 +1,26 @@
+:root {
+    --bg-main: #0b0b0c;
+    --bg-panel: #151517;
+    --bg-item: #1e1e21;
+    --accent: #f47b67;
+    --text: #ffffff;
+    --text-muted: #8e8e93;
+    --danger: #ed4245;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+button { cursor: pointer; transition: 0.2s; border: none; }
+button:hover { opacity: 0.8; }
+
+input { outline: none; }

@@ -1,31 +1,51 @@
-﻿const express = require('express');
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-let users = [];
-let chatHistory = [];
-let servers = {};
+
+// Statische Ordner freigeben (damit CSS und JS geladen werden)
 app.use('/css', express.static(path.join(__dirname, '../css')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../html/index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '../html/loging.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../html/register.html')));
-app.get('/friends', (req, res) => res.sendFile(path.join(__dirname, '../html/friends.html')));
-app.get('/server-create', (req, res) => res.sendFile(path.join(__dirname, '../html/server-create.html')));
-app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, '../html/settings.html')));
-io.on('connection', (socket) => {
-    socket.on('join-chat', (username) => {
-        socket.username = username;
-        if(username && !users.includes(username)) users.push(username);
-        socket.emit('load-history', chatHistory);
-        io.emit('update-user-list', users);
-    });
-    socket.on('send-msg', (data) => {
-        const msgData = { user: data.user, text: data.text, target: data.target, time: new Date().toLocaleTimeString() };
-        chatHistory.push(msgData);
-        io.emit('receive-msg', msgData);
-    });
+app.use('/js', express.static(path.join(__dirname, '../js')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// --- ALLE ROUTEN DEFINIEREN ---
+
+// Hauptseite (Home)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/index.html'));
 });
-server.listen(3000, () => console.log('Server läuft auf http://localhost:3000'));
+
+// Login
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/loging.html'));
+});
+
+// NEU: Server erstellen
+app.get('/server-create', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/server-create.html'));
+});
+
+// NEU: Direktnachrichten
+app.get('/direct-messages', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/direct-messages.html'));
+});
+
+// NEU: Einstellungen
+app.get('/settings', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/settings.html'));
+});
+
+// Socket.io Logik
+io.on('connection', (socket) => {
+    socket.on('msg', (data) => io.emit('msg', data));
+});
+
+// Server starten
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`✅ Server aktiv: http://localhost:${PORT}`);
+});
