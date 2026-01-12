@@ -1,13 +1,13 @@
-{
-  "name": "disnord",
-  "version": "1.0.0",
-  "description": "Disnord Chat",
-  "main": "js/server.js",
-  "scripts": {
-    "start": "node js/server.js"
-  },
-  "dependencies": {
-    "express": "^4.22.1",
-    "socket.io": "^4.8.3"
-  }
+﻿{
+    "name":  "disnord",
+    "version":  "0.9.0-beta",
+    "description":  "Disnord Chat",
+    "main":  "js/server.js",
+    "scripts":  {
+                    "start":  "node js/server.js"
+                },
+    "dependencies":  {
+                         "express":  "^4.22.1",
+                         "socket.io":  "^4.8.3"
+                     }
 }
