@@ -1,31 +1,11 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Disnord - Einstellungen</title>
-    <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/settings.css">
-</head>
+﻿<!DOCTYPE html><html><head><title>Einstellungen</title>
+<link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"></head>
 <body>
-    <div class="settings-container">
-        <aside class="settings-nav">
-            <h2>Einstellungen</h2>
-            <div class="nav-item active">Mein Account</div>
-            <button class="back-btn" onclick="location.href='/'">Abbrechen</button>
-        </aside>
-        <main class="settings-content">
-            <div class="profile-header">
-                <div id="preview-av" class="av-large"></div>
-                <div class="upload-section">
-                    <h3>Profilbild ändern</h3>
-                    <input type="file" id="av-in" accept="image/*">
-                    <button class="save-btn" onclick="uploadAvatar()">Bild hochladen</button>
-                </div>
-            </div>
-            <hr>
-            <button class="logout-btn" onclick="localStorage.clear(); location.href='/login'">Abmelden</button>
-        </main>
+<div class="centered-layout">
+    <div class="card">
+        <h2>Einstellungen</h2>
+        <div style="margin:20px 0">Profilbild ändern</div>
+        <input type="file" style="margin-bottom:20px">
+        <button class="btn-primary" onclick="location.href='/'">Zurück</button>
     </div>
-    <script src="/js/settings.js"></script>
-</body>
-</html>
+</div></body></html>

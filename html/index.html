@@ -1,48 +1,26 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Disnord - Home</title>
-    <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/index.css">
-</head>
+﻿<!DOCTYPE html><html><head><title>Disnord</title>
+<link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"></head>
 <body>
-    <nav class="sidebar-servers">
-        <div class="srv-icon home-active" onclick="location.href='/'">🏠</div>
-        <div class="srv-icon add-btn" onclick="location.href='/server-create'">+</div>
+<div class="app-container">
+    <nav class="sidebar-srv" id="srv-list">
+        <div class="srv-icon" onclick="location.href='/'" style="background:#5865F2">🏠</div>
+        <div style="height:2px; width:30px; background:#333; margin:5px 0"></div>
+        <div class="srv-icon" onclick="location.href='/server-create'" style="background:#23a559; color:white; margin-top:auto">+</div>
     </nav>
-
-    <aside class="sidebar-main">
-        <div class="nav-section">
-            <button class="nav-btn" onclick="location.href='/direct-messages'">📬 Direktnachrichten</button>
-        </div>
-        <div class="channel-list">
-            <h3>Kanäle</h3>
-            <div class="channel active"># allgemein</div>
-        </div>
-        <div class="user-bar" onclick="location.href='/settings'">
-            <div id="my-av-box" class="av-small"></div>
-            <div class="user-info">
-                <span id="my-name">Lädt...</span>
-                <small>Online</small>
-            </div>
-            <div class="settings-gear">⚙️</div>
-        </div>
-    </aside>
-
-    <main class="chat-area">
-        <header class="chat-header">
-            <h2># allgemein</h2>
-        </header>
-        <div id="chat-box">
-            </div>
-        <div class="input-area">
-            <input id="in" placeholder="Nachricht an #allgemein">
-            <button id="btn">➤</button>
-        </div>
+    <main class="chat-main">
+        <div style="padding:20px; border-bottom:1px solid #333; font-weight:bold"># allgemein</div>
+        <div id="chat-box" style="flex:1; padding:20px; overflow-y:auto"></div>
+        <div class="input-area"><div class="input-wrapper"><input id="msg-in" placeholder="Nachricht senden..."><button class="btn-primary" onclick="send()">Senden</button></div></div>
     </main>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/index.js"></script>
-</body>
-</html>
+</div>
+<script src="/socket.io/socket.io.js"></script><script src="/js/index.js"></script>
+<script>
+    // Server laden
+    const servers = JSON.parse(localStorage.getItem('disnord_servers')) || [];
+    const list = document.getElementById('srv-list');
+    const plus = list.lastElementChild;
+    servers.forEach(s => {
+        let d = document.createElement('div'); d.className='srv-icon'; d.innerText=s.initial; d.title=s.name; d.style.background=s.color;
+        list.insertBefore(d, plus);
+    });
+</script></body></html>
