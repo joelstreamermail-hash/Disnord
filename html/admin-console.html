@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <title>Disnord | Admin Console</title>
+</head>
+<body class="centered-layout">
+    <div class="card" style="width: 500px; text-align: left;">
+        <h1>🛡️ Admin Konsole</h1>
+        <p style="color:var(--text-muted)">Verwalte Nutzer-IDs und Sperren</p>
+        
+        <div style="margin-top:20px;">
+            <label>Nutzer-ID eingeben</label>
+            <input id="target-id" placeholder="DN-XXXXX..." style="width:100%; padding:10px; background:#2e3136; border:none; color:white; border-radius:5px; margin:10px 0;">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-danger" onclick="doAction('ban')" style="flex:1; background:#ed4245;">Bannen</button>
+                <button class="btn-primary" onclick="doAction('unban')" style="flex:1;">Entbannen</button>
+            </div>
+        </div>
+
+        <div style="margin-top:30px;">
+            <h3>Aktuelle Sperrliste (Bans)</h3>
+            <ul id="ban-list" style="list-style:none; padding:0; color:#dcddde; font-family:monospace;"></ul>
+        </div>
+        
+        <button class="btn-primary" onclick="location.href='/'" style="width:100%; margin-top:20px; background:#4f545c;">Zurück zum Chat</button>
+    </div>
+
+    <script>
+        const adminId = localStorage.getItem('disnord_id');
+
+        async function loadData() {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            const list = document.getElementById('ban-list');
+            list.innerHTML = data.bans.length ? "" : "Keine gesperrten IDs.";
+            data.bans.forEach(id => {
+                list.innerHTML += `<li style="background:#202225; padding:5px; margin-bottom:5px; border-radius:3px;">🚫 ${id}</li>`;
+            });
+        }
+
+        async function doAction(action) {
+            const targetId = document.getElementById('target-id').value.trim();
+            if(!targetId) return alert("ID fehlt!");
+
+            const res = await fetch('/api/admin/action', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action, targetId, adminId })
+            });
+            
+            if(res.ok) {
+                alert("Aktion erfolgreich!");
+                document.getElementById('target-id').value = "";
+                loadData();
+            } else {
+                alert("Fehler: Du bist kein Admin!");
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

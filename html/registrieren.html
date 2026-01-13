@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/components.css"></head>
+<body class="centered-layout">
+    <div class="card">
+        <h1>Registrieren</h1>
+        <input id="u-name" placeholder="Wunschname" class="input-dark">
+        <div class="captcha-box" id="captcha-box"></div>
+        <input id="captcha-in" placeholder="Code eingeben" class="input-dark">
+        <button class="btn-primary" onclick="reg()">Account erstellen</button>
+    </div>
+    <script>
+        let code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        document.getElementById('captcha-box').innerText = code;
+
+        function reg() {
+            const user = document.getElementById('u-name').value.trim();
+            if(!user || document.getElementById('captcha-in').value.toUpperCase() !== code) return alert("Fehler!");
+            
+            const id = "DN-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+            localStorage.setItem('disnord_id', id);
+            localStorage.setItem('disnord_user', user);
+            location.href = '/';
+        }
+    </script>
+</body>
+</html>

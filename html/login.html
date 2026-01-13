@@ -1,5 +1,21 @@
-﻿<!DOCTYPE html><html><head><link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/components.css"></head>
-<body class="centered-layout"><div class="card"><h1>Willkommen zurück!</h1><p style="color:var(--text-muted); margin-bottom:20px">Wir freuen uns dich wiederzusehen.</p>
-<input id="u-name" placeholder="Benutzername" style="width:100%; padding:10px; background:var(--bg-item); border-radius:5px; margin-bottom:20px; color:white">
-<button class="btn-primary" style="width:100%" onclick="l()">Einloggen</button></div>
-<script>function l(){localStorage.setItem('disnord_user', document.getElementById('u-name').value || 'User'); location.href='/'}</script></body></html>
+﻿<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/components.css"></head>
+<body class="centered-layout">
+    <div class="card">
+        <h1>Willkommen zurück!</h1>
+        <input id="u-name" placeholder="Benutzername" style="width:100%; padding:12px; background:#2e3136; border:none; color:white; border-radius:5px; margin: 15px 0;">
+        <button class="btn-primary" onclick="login()" style="width:100%; padding:12px;">Einloggen</button>
+        <p onclick="location.href='/register'" style="color:#00aff4; cursor:pointer; font-size:13px; margin-top:15px;">Kein Account? Registrieren</p>
+    </div>
+    <script>
+        function login() {
+            const user = document.getElementById('u-name').value.trim();
+            if(!user) return alert("Name fehlt!");
+            if(!localStorage.getItem('disnord_id')) return alert("Kein Account gefunden! Bitte registriere dich zuerst.");
+            localStorage.setItem('disnord_user', user);
+            location.href = '/';
+        }
+    </script>
+</body>
+</html>

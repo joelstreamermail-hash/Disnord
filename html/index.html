@@ -1,31 +1,66 @@
-﻿<!DOCTYPE html><html><head><title>Disnord</title>
-<link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/layout.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/index.css"></head>
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+</head>
 <body>
-<div class="app-container">
-    <nav class="sidebar-srv" id="srv-list">
-        <div class="srv-icon" onclick="location.href='/'" style="background:#5865F2" title="Home">🏠</div>
-        <div style="height:2px; width:30px; background:#333; margin:5px 0"></div>
-        <div class="srv-icon" onclick="location.href='/server-create'" style="background:#23a559; color:white; margin-top:auto" title="Server erstellen">+</div>
-    </nav>
-    <aside class="sidebar-channels" style="padding:20px">
-        <h3 style="margin-bottom:20px">Kanäle</h3>
-        <div style="padding:8px; background:var(--bg-item); border-radius:5px; cursor:pointer"># allgemein</div>
-    </aside>
-    <main class="chat-main">
-        <div style="padding:15px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center">
-            <b># allgemein</b>
-            <button onclick="location.href='/settings'" style="padding:5px 10px; font-size:12px; background:var(--bg-item)">⚙️ Einstellungen</button>
-        </div>
-        <div id="chat-box"></div>
-        <div class="input-area"><div class="input-wrapper"><input id="msg-in" placeholder="Nachricht an #allgemein"><button class="btn-primary" onclick="send()">Senden</button></div></div>
-    </main>
-</div>
-<script src="/socket.io/socket.io.js"></script><script src="/js/index.js"></script>
-<script>
-    // Server laden
-    const list = document.getElementById('srv-list'); const plus = list.lastElementChild;
-    (JSON.parse(localStorage.getItem('disnord_servers'))||[]).forEach(s => {
-        let d = document.createElement('div'); d.className='srv-icon'; d.innerText=s.initial; d.title=s.name; d.style.background=s.color;
-        list.insertBefore(d, plus);
-    });
-</script></body></html>
+    <div class="app-container">
+        <aside class="sidebar-channels" style="padding:20px; width:280px;">
+            <h3>User-Settings</h3>
+            <div style="margin-top:20px;">
+                <button class="btn-primary" onclick="location.href='/'" style="width:100%; margin-bottom:10px;">← Zurück</button>
+                <button class="btn-danger" onclick="logout()" style="width:100%; background:#ed4245; color:white;">Logout</button>
+            </div>
+        </aside>
+        <main class="chat-main" style="padding:60px;">
+            <div class="card" style="width:100%; max-width:700px; text-align:left;">
+                <h1>Benutzerprofil</h1>
+                <div style="display:flex; gap:30px; margin-top:30px;">
+                    <div style="flex:1;">
+                        <label style="color:#b9bbbe; font-weight:bold; font-size:12px;">AVATAR HOCHLADEN</label>
+                        <input type="file" id="av-file" style="display:block; margin:10px 0;">
+                        <button class="btn-primary" onclick="upload()">Bild speichern</button>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="color:#b9bbbe; font-weight:bold; font-size:12px;">DEINE BIO</label>
+                        <textarea id="bio-text" style="width:100%; height:100px; background:#2e3136; border:none; color:white; padding:10px; border-radius:5px; margin-top:10px; resize:none;"></textarea>
+                        <button class="btn-primary" onclick="saveBio()" style="margin-top:10px;">Bio speichern</button>
+                    </div>
+                </div>
+                <div style="margin-top:40px; padding:15px; background:#202225; border-radius:5px;">
+                    <small style="color:#72767d;">DEINE EINZIGARTIGE USER-ID (Für Admins)</small>
+                    <div id="display-id" style="color:#00aff4; font-family:monospace; font-size:18px; margin-top:5px;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.getElementById('display-id').innerText = localStorage.getItem('disnord_id');
+        document.getElementById('bio-text').value = localStorage.getItem('disnord_bio') || "";
+
+        async function upload() {
+            const file = document.getElementById('av-file').files[0];
+            if(!file) return alert("Wähle ein Bild!");
+            const fd = new FormData(); fd.append('avatar', file);
+            const res = await fetch('/upload-avatar', { method: 'POST', body: fd });
+            const result = await res.json();
+            if(result.success) {
+                localStorage.setItem('disnord_avatar', result.url);
+                alert("Avatar aktualisiert!");
+            }
+        }
+
+        function saveBio() {
+            localStorage.setItem('disnord_bio', document.getElementById('bio-text').value);
+            alert("Bio gespeichert!");
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.href = '/login';
+        }
+    </script>
+</body>
+</html>

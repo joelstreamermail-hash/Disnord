@@ -1,7 +1,0 @@
-﻿#chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-.msg-container { display: flex; gap: 12px; margin-bottom: 10px; }
-.msg-av { width: 40px; height: 40px; border-radius: 50%; background: #333; }
-.msg-user { color: var(--accent); font-weight: bold; margin-right: 8px; }
-.msg-time { color: var(--text-muted); font-size: 11px; }
-.system-msg { text-align: center; color: var(--text-muted); font-size: 12px; margin: 15px 0; display: flex; align-items: center; gap: 10px; }
-.system-msg::before, .system-msg::after { content: ""; flex: 1; height: 1px; background: #333; }
