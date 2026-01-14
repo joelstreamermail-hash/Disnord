@@ -16,17 +16,18 @@ app.use(express.json());
 // --- DATEI-PFADE (Dynamisch für Railway/Render) ---
 // Wenn wir online sind, nutzen wir /data, sonst lokal ../data
 const isOnline = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.RENDER;
-const basePath = isOnline ? '/data' : path.join(__dirname, '../data');
+const basePath = path.join(__dirname, '../data');
 
 // Stelle sicher, dass der Ordner existiert
-if (!fs.existsSync(basePath) && !isOnline) fs.mkdirSync(basePath);
+if (!fs.existsSync(basePath)) {
+    fs.mkdirSync(basePath, { recursive: true });
+}
 
 const FILES = {
     users: path.join(basePath, 'users.json'),
     servers: path.join(basePath, 'servers.json'),
     msgs: path.join(basePath, 'messages.json')
 };
-
 // Initialisiere Dateien, falls sie fehlen
 Object.values(FILES).forEach(f => {
     // Ordnerstruktur rekursiv erstellen, falls Pfad komplex ist
