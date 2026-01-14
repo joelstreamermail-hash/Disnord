@@ -3,284 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disnord | App</title>
-    <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/components.css">
+    <title>Disnord App</title>
+    <link rel="stylesheet" href="../css/style.css">
     <style>
-        :root {
-            --bg-sidebar: #2f3136;
-            --bg-chat: #36393f;
-            --bg-widget: #232428;
-            --text-main: #dcddde;
-            --text-muted: #72767d;
-            --online: #3ba55c;
-        }
-
-        body, html {
-            margin: 0; padding: 0;
-            height: 100%;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: var(--bg-chat);
-            color: var(--text-main);
-            overflow: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* Sidebar links */
-        .sidebar {
-            width: 240px;
-            background-color: var(--bg-sidebar);
+        /* Spezifisches Layout für die App */
+        .app-container { display: flex; height: 100vh; padding: 20px; gap: 20px; }
+        
+        /* Linke Leiste (Server Dock) */
+        .server-dock {
+            width: 80px;
             display: flex;
             flex-direction: column;
-            position: relative;
-        }
-
-        .channel-list {
-            flex: 1;
-            padding: 10px;
-        }
-
-        .channel-item {
-            padding: 8px;
-            margin-bottom: 2px;
-            border-radius: 4px;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .channel-item:hover, .channel-item.active {
-            background-color: #393c43;
-            color: #fff;
-        }
-
-        /* Das User-Widget unten links */
-        .user-widget {
-            height: 52px;
-            background-color: var(--bg-widget);
-            display: flex;
             align-items: center;
-            padding: 0 8px;
-            justify-content: space-between;
-        }
-
-        .user-info-small {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .user-info-small:hover { background-color: #3f4147; }
-
-        .av-wrapper {
-            position: relative;
-            width: 32px;
-            height: 32px;
-        }
-
-        .widget-av {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 2px solid var(--bg-widget);
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background-color: var(--online);
-        }
-
-        .name-tag {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .widget-user-name { font-size: 13px; font-weight: bold; color: white; }
-        .widget-user-status { font-size: 11px; color: var(--text-muted); }
-
-        .widget-actions {
-            display: flex;
-            gap: 4px;
-        }
-
-        .action-icon {
-            padding: 4px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .action-icon:hover { background-color: #4f545c; }
-
-        /* Chat Bereich rechts */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-chat);
-        }
-
-        .chat-header {
-            height: 48px;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #26272b;
-            font-weight: bold;
-        }
-
-        #chat-box {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
+            padding: 20px 0;
             gap: 15px;
         }
-
-        /* Nachrichten-Design */
-        .msg-container {
-            display: flex;
-            gap: 15px;
+        
+        .server-icon {
+            width: 50px; height: 50px;
+            border-radius: 50%; /* Rund */
+            background: rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s;
+            color: white; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
         }
+        .server-icon:hover { background: var(--primary-color); transform: scale(1.1); box-shadow: 0 0 15px var(--primary-color); }
+        .add-btn { font-size: 24px; border: 2px dashed rgba(255,255,255,0.3); background: transparent; }
 
-        .msg-av {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            object-fit: cover;
-        }
+        /* Chat Bereich */
+        .chat-container { flex: 1; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+        .chat-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 18px; font-weight: bold; }
+        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        
+        /* Nachrichten Bubble Style */
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 80%; width: fit-content; background: rgba(255,255,255,0.08); }
+        .msg strong { color: var(--primary-color); display: block; font-size: 0.8em; margin-bottom: 2px; }
 
-        .msg-content { flex: 1; }
-        .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .msg-user { font-weight: bold; cursor: pointer; color: #fff; }
-        .msg-user:hover { text-decoration: underline; }
-        .msg-time { font-size: 12px; color: var(--text-muted); }
-        .msg-text { color: #dcddde; line-height: 1.4; word-break: break-word; }
-
-        .badge-mod {
-            background-color: #5865f2;
-            color: white;
-            font-size: 10px;
-            padding: 1px 4px;
-            border-radius: 3px;
-        }
-
-        .del-btn { color: var(--text-muted); cursor: pointer; font-size: 12px; }
-        .del-btn:hover { color: #ed4245; }
-
-        /* Input Bereich */
-        .input-area {
-            padding: 0 20px 24px 20px;
-        }
-
-        .input-wrapper {
-            background-color: #40444b;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-        }
-
-        .input-wrapper input {
-            background: none;
-            border: none;
-            color: white;
-            flex: 1;
-            font-size: 15px;
-            outline: none;
-        }
-
-        /* Modal Design (Discord Style) */
-        .profile-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100;
-        }
-
-        .profile-card {
-            width: 300px; background: #18191c; border-radius: 8px; overflow: hidden;
-        }
-
-        .profile-banner { height: 60px; background-color: #5865f2; }
-        .profile-info { padding: 16px; position: relative; }
-        .profile-av-large {
-            width: 80px; height: 80px; border-radius: 50%; border: 6px solid #18191c;
-            position: absolute; top: -40px; left: 16px; background: #36393f;
-        }
+        .input-area { padding: 20px; display: flex; gap: 10px; }
+        .input-area input { margin: 0; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <aside class="sidebar">
-            <div class="chat-header" style="border-bottom: 1px solid #26272b;">
-                Disnord Server
-            </div>
-            
-            <div class="channel-list">
-                <div class="channel-item active"># general</div>
-                <div class="channel-item"># gaming</div>
-                <div class="channel-item"># off-topic</div>
-            </div>
-
-            <div class="user-widget">
-                <div class="user-info-small" onclick="location.href='/settings'">
-                    <div class="av-wrapper">
-                        <img src="" id="my-widget-av" class="widget-av" alt="">
-                        <div class="status-dot" id="my-status-dot"></div>
-                    </div>
-                    <div class="name-tag">
-                        <span class="widget-user-name" id="my-widget-name">Laden...</span>
-                        <span class="widget-user-status">Online</span>
-                    </div>
+        <nav class="glass-panel server-dock">
+            <div id="server-list" style="display:flex; flex-direction:column; gap:10px; width:100%; align-items:center;">
                 </div>
-                <div class="widget-actions">
-                    <div id="admin-icon" class="action-icon" style="display:none;" onclick="location.href='/admin-console'" title="Admin-Bereich">🛡️</div>
-                    <div class="action-icon" onclick="location.href='/settings'" title="Einstellungen">⚙️</div>
+            <div class="server-icon add-btn" onclick="askServerName()">+</div>
+        </nav>
+
+        <main class="glass-panel chat-container">
+            <div class="chat-header"># Allgemein</div>
+            <div id="messages" class="messages">
                 </div>
-            </div>
-        </aside>
-
-        <main class="chat-area">
-            <header class="chat-header">
-                <span style="color: var(--text-muted); margin-right: 8px; font-size: 20px;">#</span> general
-            </header>
-
-            <div id="chat-box">
-                </div>
-
             <div class="input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="msg-in" placeholder="Nachricht an #general">
-                </div>
+                <input type="text" id="msgInput" placeholder="Schreibe etwas...">
+                <button class="btn btn-primary" onclick="sendMessage()">➤</button>
             </div>
         </main>
     </div>
-    <div style="padding: 10px; border-bottom: 1px solid #26272b;">
-    <div style="background: #202225; border-radius: 4px; display: flex; align-items: center; padding: 5px 10px;">
-        <input type="text" id="id-search-input" placeholder="ID Suche (DN-XXX...)" 
-               style="background: none; border: none; color: white; font-size: 12px; outline: none; width: 100%;">
-        <span style="cursor: pointer;" onclick="searchUser()">🔍</span>
-    </div>
-    </div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/index.js"></script>
+    <script>
+        const socket = io();
+        const user = localStorage.getItem('disnord_user') || 'Gast';
+
+        // Nachrichten empfangen
+        socket.on('chat-message', (msg) => {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<strong>${msg.user}</strong>${msg.text}`;
+            const box = document.getElementById('messages');
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        });
+
+        socket.on('history', (msgs) => {
+            msgs.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'msg';
+                div.innerHTML = `<strong>${m.user}</strong>${m.text}`;
+                document.getElementById('messages').appendChild(div);
+            });
+        });
+
+        // Server Liste
+        socket.on('server-list', (servers) => {
+            const list = document.getElementById('server-list');
+            list.innerHTML = '';
+            servers.forEach(srv => {
+                const icon = document.createElement('div');
+                icon.className = 'server-icon';
+                icon.innerText = srv.name.substring(0,2).toUpperCase();
+                icon.title = srv.name;
+                list.appendChild(icon);
+            });
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            if(input.value) {
+                socket.emit('chat-message', { user: user, text: input.value });
+                input.value = '';
+            }
+        }
+        
+        // Enter Taste
+        document.getElementById('msgInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        function askServerName() {
+            const name = prompt("Wie soll der neue Server heißen?");
+            if(name) socket.emit('create-server', { name: name });
+        }
+    </script>
 </body>
 </html>
