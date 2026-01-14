@@ -1,26 +1,67 @@
 <!DOCTYPE html>
-<html>
-<head><link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/components.css"></head>
-<body class="centered-layout">
-    <div class="card">
-        <h1>Registrieren</h1>
-        <input id="u-name" placeholder="Wunschname" class="input-dark">
-        <div class="captcha-box" id="captcha-box"></div>
-        <input id="captcha-in" placeholder="Code eingeben" class="input-dark">
-        <button class="btn-primary" onclick="reg()">Account erstellen</button>
-    </div>
-    <script>
-        let code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        document.getElementById('captcha-box').innerText = code;
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Disnord | Registrieren</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body { background: #36393f; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+        .auth-box { background: #2f3136; padding: 40px; border-radius: 5px; width: 400px; box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2); }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #202225; border: 1px solid #202225; color: white; border-radius: 3px; }
+        button { width: 100%; padding: 10px; background: #5865f2; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; margin-top: 20px;}
+        button:hover { background: #4752c4; }
+        .error { color: #ed4245; font-size: 12px; margin-top: 5px; display: none; }
+        a { color: #00aff4; text-decoration: none; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="auth-box">
+        <h2>Account erstellen</h2>
+        <p style="color:#b9bbbe; font-size:14px;">Tritt Disnord bei!</p>
+        
+        <label>Benutzername</label>
+        <input type="text" id="reg-user">
+        
+        <label>Dein Geheimer Code (ID)</label>
+        <input type="text" id="reg-code">
+        
+        <p id="error-msg" class="error"></p>
 
-        function reg() {
-            const user = document.getElementById('u-name').value.trim();
-            if(!user || document.getElementById('captcha-in').value.toUpperCase() !== code) return alert("Fehler!");
-            
-            const id = "DN-" + Math.random().toString(36).substring(2, 10).toUpperCase();
-            localStorage.setItem('disnord_id', id);
-            localStorage.setItem('disnord_user', user);
-            location.href = '/';
+        <button onclick="doRegister()">Weiter</button>
+        <br><br>
+        <a href="/login">Du hast schon einen Account?</a>
+    </div>
+
+    <script>
+        async function doRegister() {
+            const user = document.getElementById('reg-user').value;
+            const code = document.getElementById('reg-code').value;
+            const errorField = document.getElementById('error-msg');
+
+            if(!user || !code) {
+                errorField.innerText = "Bitte alles ausfüllen.";
+                errorField.style.display = "block";
+                return;
+            }
+
+            // Sende Daten an Server
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, code: code })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Speichern & Weiterleiten
+                localStorage.setItem('disnord_user', user);
+                localStorage.setItem('disnord_code', code);
+                window.location.href = '/app'; // <--- HIER PASSIERT DIE MAGIE
+            } else {
+                errorField.innerText = result.message || "Fehler beim Registrieren.";
+                errorField.style.display = "block";
+            }
         }
     </script>
 </body>

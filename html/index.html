@@ -1,66 +1,286 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disnord | App</title>
     <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/components.css">
+    <style>
+        :root {
+            --bg-sidebar: #2f3136;
+            --bg-chat: #36393f;
+            --bg-widget: #232428;
+            --text-main: #dcddde;
+            --text-muted: #72767d;
+            --online: #3ba55c;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            height: 100%;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-chat);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar links */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .channel-list {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .channel-item {
+            padding: 8px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .channel-item:hover, .channel-item.active {
+            background-color: #393c43;
+            color: #fff;
+        }
+
+        /* Das User-Widget unten links */
+        .user-widget {
+            height: 52px;
+            background-color: var(--bg-widget);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            justify-content: space-between;
+        }
+
+        .user-info-small {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .user-info-small:hover { background-color: #3f4147; }
+
+        .av-wrapper {
+            position: relative;
+            width: 32px;
+            height: 32px;
+        }
+
+        .widget-av {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-widget);
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background-color: var(--online);
+        }
+
+        .name-tag {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .widget-user-name { font-size: 13px; font-weight: bold; color: white; }
+        .widget-user-status { font-size: 11px; color: var(--text-muted); }
+
+        .widget-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-icon {
+            padding: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .action-icon:hover { background-color: #4f545c; }
+
+        /* Chat Bereich rechts */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-chat);
+        }
+
+        .chat-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #26272b;
+            font-weight: bold;
+        }
+
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Nachrichten-Design */
+        .msg-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .msg-av {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            object-fit: cover;
+        }
+
+        .msg-content { flex: 1; }
+        .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .msg-user { font-weight: bold; cursor: pointer; color: #fff; }
+        .msg-user:hover { text-decoration: underline; }
+        .msg-time { font-size: 12px; color: var(--text-muted); }
+        .msg-text { color: #dcddde; line-height: 1.4; word-break: break-word; }
+
+        .badge-mod {
+            background-color: #5865f2;
+            color: white;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .del-btn { color: var(--text-muted); cursor: pointer; font-size: 12px; }
+        .del-btn:hover { color: #ed4245; }
+
+        /* Input Bereich */
+        .input-area {
+            padding: 0 20px 24px 20px;
+        }
+
+        .input-wrapper {
+            background-color: #40444b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .input-wrapper input {
+            background: none;
+            border: none;
+            color: white;
+            flex: 1;
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* Modal Design (Discord Style) */
+        .profile-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+
+        .profile-card {
+            width: 300px; background: #18191c; border-radius: 8px; overflow: hidden;
+        }
+
+        .profile-banner { height: 60px; background-color: #5865f2; }
+        .profile-info { padding: 16px; position: relative; }
+        .profile-av-large {
+            width: 80px; height: 80px; border-radius: 50%; border: 6px solid #18191c;
+            position: absolute; top: -40px; left: 16px; background: #36393f;
+        }
+    </style>
 </head>
 <body>
+
     <div class="app-container">
-        <aside class="sidebar-channels" style="padding:20px; width:280px;">
-            <h3>User-Settings</h3>
-            <div style="margin-top:20px;">
-                <button class="btn-primary" onclick="location.href='/'" style="width:100%; margin-bottom:10px;">← Zurück</button>
-                <button class="btn-danger" onclick="logout()" style="width:100%; background:#ed4245; color:white;">Logout</button>
+        <aside class="sidebar">
+            <div class="chat-header" style="border-bottom: 1px solid #26272b;">
+                Disnord Server
             </div>
-        </aside>
-        <main class="chat-main" style="padding:60px;">
-            <div class="card" style="width:100%; max-width:700px; text-align:left;">
-                <h1>Benutzerprofil</h1>
-                <div style="display:flex; gap:30px; margin-top:30px;">
-                    <div style="flex:1;">
-                        <label style="color:#b9bbbe; font-weight:bold; font-size:12px;">AVATAR HOCHLADEN</label>
-                        <input type="file" id="av-file" style="display:block; margin:10px 0;">
-                        <button class="btn-primary" onclick="upload()">Bild speichern</button>
+            
+            <div class="channel-list">
+                <div class="channel-item active"># general</div>
+                <div class="channel-item"># gaming</div>
+                <div class="channel-item"># off-topic</div>
+            </div>
+
+            <div class="user-widget">
+                <div class="user-info-small" onclick="location.href='/settings'">
+                    <div class="av-wrapper">
+                        <img src="" id="my-widget-av" class="widget-av" alt="">
+                        <div class="status-dot" id="my-status-dot"></div>
                     </div>
-                    <div style="flex:1;">
-                        <label style="color:#b9bbbe; font-weight:bold; font-size:12px;">DEINE BIO</label>
-                        <textarea id="bio-text" style="width:100%; height:100px; background:#2e3136; border:none; color:white; padding:10px; border-radius:5px; margin-top:10px; resize:none;"></textarea>
-                        <button class="btn-primary" onclick="saveBio()" style="margin-top:10px;">Bio speichern</button>
+                    <div class="name-tag">
+                        <span class="widget-user-name" id="my-widget-name">Laden...</span>
+                        <span class="widget-user-status">Online</span>
                     </div>
                 </div>
-                <div style="margin-top:40px; padding:15px; background:#202225; border-radius:5px;">
-                    <small style="color:#72767d;">DEINE EINZIGARTIGE USER-ID (Für Admins)</small>
-                    <div id="display-id" style="color:#00aff4; font-family:monospace; font-size:18px; margin-top:5px;"></div>
+                <div class="widget-actions">
+                    <div id="admin-icon" class="action-icon" style="display:none;" onclick="location.href='/admin-console'" title="Admin-Bereich">🛡️</div>
+                    <div class="action-icon" onclick="location.href='/settings'" title="Einstellungen">⚙️</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <span style="color: var(--text-muted); margin-right: 8px; font-size: 20px;">#</span> general
+            </header>
+
+            <div id="chat-box">
+                </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="msg-in" placeholder="Nachricht an #general">
                 </div>
             </div>
         </main>
     </div>
-    <script>
-        document.getElementById('display-id').innerText = localStorage.getItem('disnord_id');
-        document.getElementById('bio-text').value = localStorage.getItem('disnord_bio') || "";
-
-        async function upload() {
-            const file = document.getElementById('av-file').files[0];
-            if(!file) return alert("Wähle ein Bild!");
-            const fd = new FormData(); fd.append('avatar', file);
-            const res = await fetch('/upload-avatar', { method: 'POST', body: fd });
-            const result = await res.json();
-            if(result.success) {
-                localStorage.setItem('disnord_avatar', result.url);
-                alert("Avatar aktualisiert!");
-            }
-        }
-
-        function saveBio() {
-            localStorage.setItem('disnord_bio', document.getElementById('bio-text').value);
-            alert("Bio gespeichert!");
-        }
-
-        function logout() {
-            localStorage.clear();
-            location.href = '/login';
-        }
-    </script>
+    <div style="padding: 10px; border-bottom: 1px solid #26272b;">
+    <div style="background: #202225; border-radius: 4px; display: flex; align-items: center; padding: 5px 10px;">
+        <input type="text" id="id-search-input" placeholder="ID Suche (DN-XXX...)" 
+               style="background: none; border: none; color: white; font-size: 12px; outline: none; width: 100%;">
+        <span style="cursor: pointer;" onclick="searchUser()">🔍</span>
+    </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/index.js"></script>
 </body>
 </html>
