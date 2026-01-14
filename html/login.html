@@ -23,30 +23,33 @@
     </div>
 
     <script>
-        async function performLogin() {
-            const name = document.getElementById('username').value;
-            const code = document.getElementById('code').value;
-            const errBox = document.getElementById('error');
+       async function performLogin() {
+    const username = document.getElementById('username').value;
+    const code = document.getElementById('code').value;
+    const errBox = document.getElementById('error');
 
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: name, code: code })
-            });
+    if(!username || !code) return;
 
-            const data = await res.json();
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, code })
+        });
+        const data = await res.json();
 
-            if (data.success) {
-                localStorage.setItem('disnord_user', name);
-                // Wenn Admin, speichere das
-                if(data.isAdmin) localStorage.setItem('disnord_admin', 'true');
-                
-                window.location.href = '/app'; // <--- WICHTIG: Weiterleitung
-            } else {
-                errBox.innerText = data.message || "Login fehlgeschlagen";
-                errBox.style.display = "block";
-            }
+        if (data.success) {
+            localStorage.setItem('disnord_user', username);
+            if(data.isAdmin) localStorage.setItem('disnord_admin', 'true');
+            window.location.href = '/app'; // Weiterleitung zum Chat
+        } else {
+            errBox.innerText = data.message;
+            errBox.style.display = "block";
         }
+    } catch (e) {
+        console.error("Login Fehler:", e);
+    }
+}
     </script>
 </body>
 </html>

@@ -2,67 +2,72 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Konsole</title>
+    <title>Admin Login</title>
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .container { max-width: 900px; margin: 50px auto; padding: 20px; }
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .admin-table th, .admin-table td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .admin-table th { color: var(--primary-color); }
-        .btn-del { background: #ff4757; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
-        .btn-del:hover { background: #e84118; }
-    </style>
 </head>
 <body>
-    <div class="glass-panel container">
+    <div id="admin-auth" class="glass-panel" style="max-width: 400px; margin: 100px auto; padding: 40px; text-align: center;">
+        <h2>Admin Zugriff</h2>
+        <input type="password" id="adminCode" placeholder="Admin Passwort/Code">
+        <button class="btn btn-primary" onclick="unlockAdmin()">Entsperren</button>
+    </div>
+
+    <div id="admin-content" class="glass-panel" style="display:none; max-width: 900px; margin: 50px auto; padding: 20px;">
         <h1>🔧 Admin Dashboard</h1>
-        <p>Nutzer verwalten und bannen</p>
-        
-        <table class="admin-table">
+        <table style="width:100%; color: white; margin-top: 20px;">
             <thead>
-                <tr>
-                    <th>Benutzername</th>
-                    <th>Code (ID)</th>
-                    <th>Aktionen</th>
+                <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <th>User</th><th>Code</th><th>Aktion</th>
                 </tr>
             </thead>
-            <tbody id="user-list">
-                </tbody>
+            <tbody id="user-list"></tbody>
         </table>
-        
-        <br>
-        <a href="/app" class="btn btn-primary">Zurück zum Chat</a>
     </div>
 
     <script>
-        async function loadData() {
+        let currentAdminCode = "";
+
+        async function unlockAdmin() {
+            const code = document.getElementById('adminCode').value;
+            const res = await fetch('/api/admin/verify', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                currentAdminCode = code;
+                document.getElementById('admin-auth').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                loadUsers();
+            } else {
+                alert("Zugriff verweigert!");
+            }
+        }
+
+        async function loadUsers() {
             const res = await fetch('/api/admin/users');
             const users = await res.json();
             const list = document.getElementById('user-list');
             list.innerHTML = '';
-
             for (const [name, data] of Object.entries(users)) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${name}</strong></td>
-                    <td>${data.code}</td>
-                    <td>
-                        <button class="btn-del" onclick="deleteUser('${name}')">Entfernen</button>
-                    </td>
-                `;
-                list.appendChild(row);
+                list.innerHTML += `<tr>
+                    <td>${name}</td><td>${data.code}</td>
+                    <td><button onclick="deleteUser('${name}')" class="btn-del">Löschen</button></td>
+                </tr>`;
             }
         }
 
         async function deleteUser(name) {
-            if(!confirm(`Willst du ${name} wirklich löschen?`)) return;
-            
-            await fetch('/api/admin/users/' + name, { method: 'DELETE' });
-            loadData(); // Liste neu laden
+            if(!confirm("Löschen?")) return;
+            await fetch('/api/admin/users/' + name, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ adminCode: currentAdminCode })
+            });
+            loadUsers();
         }
-
-        // Beim Start laden
-        loadData();
     </script>
 </body>
 </html>
