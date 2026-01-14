@@ -2,37 +2,67 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Disnord Admin</title>
+    <title>Admin Konsole</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        .admin-box { max-width: 800px; margin: 50px auto; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        th { background: rgba(255,255,255,0.1); color: var(--primary-color); }
+        .container { max-width: 900px; margin: 50px auto; padding: 20px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table th, .admin-table td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .admin-table th { color: var(--primary-color); }
+        .btn-del { background: #ff4757; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-del:hover { background: #e84118; }
     </style>
 </head>
 <body>
-    <div class="admin-box glass-panel">
-        <h1>Admin Konsole</h1>
-        <p>Übersicht aller registrierten Nutzer</p>
-        <table id="userTable">
+    <div class="glass-panel container">
+        <h1>🔧 Admin Dashboard</h1>
+        <p>Nutzer verwalten und bannen</p>
+        
+        <table class="admin-table">
             <thead>
-                <tr><th>Username</th><th>Code</th><th>Status</th></tr>
+                <tr>
+                    <th>Benutzername</th>
+                    <th>Code (ID)</th>
+                    <th>Aktionen</th>
+                </tr>
             </thead>
-            <tbody></tbody>
+            <tbody id="user-list">
+                </tbody>
         </table>
+        
+        <br>
+        <a href="/app" class="btn btn-primary">Zurück zum Chat</a>
     </div>
 
     <script>
-        async function loadUsers() {
+        async function loadData() {
             const res = await fetch('/api/admin/users');
             const users = await res.json();
-            const tbody = document.querySelector('#userTable tbody');
-            for(let name in users) {
-                tbody.innerHTML += `<tr><td>${name}</td><td>${users[name].code}</td><td>Aktiv</td></tr>`;
+            const list = document.getElementById('user-list');
+            list.innerHTML = '';
+
+            for (const [name, data] of Object.entries(users)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${name}</strong></td>
+                    <td>${data.code}</td>
+                    <td>
+                        <button class="btn-del" onclick="deleteUser('${name}')">Entfernen</button>
+                    </td>
+                `;
+                list.appendChild(row);
             }
         }
-        loadUsers();
+
+        async function deleteUser(name) {
+            if(!confirm(`Willst du ${name} wirklich löschen?`)) return;
+            
+            await fetch('/api/admin/users/' + name, { method: 'DELETE' });
+            loadData(); // Liste neu laden
+        }
+
+        // Beim Start laden
+        loadData();
     </script>
 </body>
 </html>

@@ -2,41 +2,50 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Disnord | Login</title>
+    <title>Login</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        body { background: var(--bg-gradient); display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Poppins', sans-serif; }
-        .auth-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { margin-bottom: 20px; color: #fff; }
-        input { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; color: #fff; width: 100%; margin-bottom: 15px; outline: none; }
-        .btn-auth { width: 100%; background: linear-gradient(45deg, #ff00cc, #333399); color: white; border: none; padding: 12px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        body { display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .auth-box { width: 350px; padding: 40px; text-align: center; }
+        h2 { margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="auth-card">
-        <h2>Login</h2>
-        <input type="text" id="user" placeholder="Benutzername">
+    <div class="glass-panel auth-box">
+        <h2>Willkommen zurück</h2>
+        <input type="text" id="username" placeholder="Dein Name">
         <input type="password" id="code" placeholder="Dein Code">
-        <button class="btn-auth" onclick="auth()">Einloggen</button>
-        <p style="margin-top:15px; font-size:12px;"><a href="/register" style="color:var(--primary-color);">Noch kein Account?</a></p>
+        <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="performLogin()">Einloggen</button>
+        <p style="margin-top:15px; font-size: 0.8em;">
+            Kein Account? <a href="/register" style="color:var(--primary-color);">Registrieren</a>
+        </p>
+        <p id="error" style="color: #ff4757; display:none; margin-top:10px;"></p>
     </div>
 
     <script>
-        async function auth() {
-            const username = document.getElementById('user').value;
+        async function performLogin() {
+            const name = document.getElementById('username').value;
             const code = document.getElementById('code').value;
+            const errBox = document.getElementById('error');
+
             const res = await fetch('/api/login', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, code })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: name, code: code })
             });
+
             const data = await res.json();
-            if(data.success) {
-                localStorage.setItem('user', username);
-                localStorage.setItem('code', code);
-                if(data.isAdmin) localStorage.setItem('isAdmin', 'true');
-                window.location.href = '/app';
-            } else { alert("Fehler!"); }
+
+            if (data.success) {
+                localStorage.setItem('disnord_user', name);
+                // Wenn Admin, speichere das
+                if(data.isAdmin) localStorage.setItem('disnord_admin', 'true');
+                
+                window.location.href = '/app'; // <--- WICHTIG: Weiterleitung
+            } else {
+                errBox.innerText = data.message || "Login fehlgeschlagen";
+                errBox.style.display = "block";
+            }
         }
     </script>
 </body>
