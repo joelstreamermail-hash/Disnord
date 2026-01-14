@@ -23,14 +23,12 @@
     </div>
 
     <script>
-       async function performLogin() {
-    const username = document.getElementById('username').value;
-    const code = document.getElementById('code').value;
-    const errBox = document.getElementById('error');
+    async function performLogin() {
+        const username = document.getElementById('username').value;
+        const code = document.getElementById('code').value;
 
-    if(!username || !code) return;
+        if(!username || !code) return alert("Bitte alles ausfüllen!");
 
-    try {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -41,15 +39,11 @@
         if (data.success) {
             localStorage.setItem('disnord_user', username);
             if(data.isAdmin) localStorage.setItem('disnord_admin', 'true');
-            window.location.href = '/app'; // Weiterleitung zum Chat
+            window.location.href = '/app'; // Sofortige Weiterleitung
         } else {
-            errBox.innerText = data.message;
-            errBox.style.display = "block";
+            alert(data.message);
         }
-    } catch (e) {
-        console.error("Login Fehler:", e);
     }
-}
     </script>
 </body>
 </html>

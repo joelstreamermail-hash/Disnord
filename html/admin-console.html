@@ -2,32 +2,32 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <title>Admin-Panel</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div id="admin-auth" class="glass-panel" style="max-width: 400px; margin: 100px auto; padding: 40px; text-align: center;">
-        <h2>Admin Zugriff</h2>
-        <input type="password" id="adminCode" placeholder="Admin Passwort/Code">
-        <button class="btn btn-primary" onclick="unlockAdmin()">Entsperren</button>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div id="auth-area" class="glass-panel" style="padding: 40px; text-align: center;">
+        <h2>Admin Login</h2>
+        <input type="password" id="adminCode" placeholder="Code eingeben">
+        <button class="btn btn-primary" onclick="verifyAdmin()">Login</button>
     </div>
 
-    <div id="admin-content" class="glass-panel" style="display:none; max-width: 900px; margin: 50px auto; padding: 20px;">
-        <h1>🔧 Admin Dashboard</h1>
-        <table style="width:100%; color: white; margin-top: 20px;">
+    <div id="admin-area" class="glass-panel" style="display: none; padding: 20px; width: 80%; max-height: 80vh; overflow-y: auto;">
+        <h2>Nutzerverwaltung</h2>
+        <table style="width: 100%; border-collapse: collapse;">
             <thead>
-                <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <th>User</th><th>Code</th><th>Aktion</th>
+                <tr style="text-align: left; border-bottom: 1px solid white;">
+                    <th>Name</th><th>Code</th><th>Aktion</th>
                 </tr>
             </thead>
             <tbody id="user-list"></tbody>
         </table>
+        <button class="btn btn-primary" style="margin-top: 20px;" onclick="location.href='/app'">Zum Chat</button>
     </div>
 
     <script>
-        let currentAdminCode = "";
-
-        async function unlockAdmin() {
+        let aCode = "";
+        async function verifyAdmin() {
             const code = document.getElementById('adminCode').value;
             const res = await fetch('/api/admin/verify', {
                 method: 'POST',
@@ -35,15 +35,12 @@
                 body: JSON.stringify({ code })
             });
             const data = await res.json();
-
             if(data.success) {
-                currentAdminCode = code;
-                document.getElementById('admin-auth').style.display = 'none';
-                document.getElementById('admin-content').style.display = 'block';
+                aCode = code;
+                document.getElementById('auth-area').style.display = 'none';
+                document.getElementById('admin-area').style.display = 'block';
                 loadUsers();
-            } else {
-                alert("Zugriff verweigert!");
-            }
+            } else { alert("Falscher Code!"); }
         }
 
         async function loadUsers() {
@@ -51,20 +48,20 @@
             const users = await res.json();
             const list = document.getElementById('user-list');
             list.innerHTML = '';
-            for (const [name, data] of Object.entries(users)) {
-                list.innerHTML += `<tr>
-                    <td>${name}</td><td>${data.code}</td>
-                    <td><button onclick="deleteUser('${name}')" class="btn-del">Löschen</button></td>
+            for (const [name, info] of Object.entries(users)) {
+                list.innerHTML += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <td>${name}</td><td>${info.code}</td>
+                    <td><button onclick="deleteUser('${name}')" style="background: red; border: none; color: white; cursor: pointer; padding: 5px;">Löschen</button></td>
                 </tr>`;
             }
         }
 
         async function deleteUser(name) {
-            if(!confirm("Löschen?")) return;
+            if(!confirm("Wirklich löschen?")) return;
             await fetch('/api/admin/users/' + name, {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ adminCode: currentAdminCode })
+                body: JSON.stringify({ adminCode: aCode })
             });
             loadUsers();
         }
