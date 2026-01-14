@@ -1,3 +1,0 @@
-﻿:root { --bg-dark: #0b0b0c; --bg-panel: #151517; --bg-item: #1e1e21; --accent: #f47b67; --text: #fff; --text-muted: #999; --danger: #ed4245; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg-dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }

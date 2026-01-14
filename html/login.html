@@ -5,55 +5,38 @@
     <title>Disnord | Login</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        body { background: #36393f; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-        .auth-box { background: #2f3136; padding: 40px; border-radius: 5px; width: 400px; box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2); }
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #202225; border: 1px solid #202225; color: white; border-radius: 3px; }
-        button { width: 100%; padding: 10px; background: #5865f2; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; margin-top: 20px;}
-        button:hover { background: #4752c4; }
-        .error { color: #ed4245; font-size: 12px; margin-top: 5px; display: none; }
-        a { color: #00aff4; text-decoration: none; font-size: 12px; }
+        body { background: var(--bg-gradient); display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Poppins', sans-serif; }
+        .auth-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { margin-bottom: 20px; color: #fff; }
+        input { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; color: #fff; width: 100%; margin-bottom: 15px; outline: none; }
+        .btn-auth { width: 100%; background: linear-gradient(45deg, #ff00cc, #333399); color: white; border: none; padding: 12px; border-radius: 30px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="auth-box">
-        <h2>Willkommen zurück!</h2>
-        <p style="color:#b9bbbe; font-size:14px;">Wir freuen uns, dich wiederzusehen.</p>
-        
-        <label>Benutzername</label>
-        <input type="text" id="login-user">
-        
-        <label>Dein Code</label>
-        <input type="password" id="login-code">
-        
-        <p id="error-msg" class="error"></p>
-
-        <button onclick="doLogin()">Einloggen</button>
-        <br><br>
-        <a href="/register">Brauchst du einen Account?</a>
+    <div class="auth-card">
+        <h2>Login</h2>
+        <input type="text" id="user" placeholder="Benutzername">
+        <input type="password" id="code" placeholder="Dein Code">
+        <button class="btn-auth" onclick="auth()">Einloggen</button>
+        <p style="margin-top:15px; font-size:12px;"><a href="/register" style="color:var(--primary-color);">Noch kein Account?</a></p>
     </div>
 
     <script>
-        async function doLogin() {
-            const user = document.getElementById('login-user').value;
-            const code = document.getElementById('login-code').value;
-            const errorField = document.getElementById('error-msg');
-
-            const response = await fetch('/api/login', {
+        async function auth() {
+            const username = document.getElementById('user').value;
+            const code = document.getElementById('code').value;
+            const res = await fetch('/api/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, code: code })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, code })
             });
-
-            const result = await response.json();
-
-            if (result.success) {
-                localStorage.setItem('disnord_user', user);
-                localStorage.setItem('disnord_code', code);
-                window.location.href = '/app'; // <--- WEITERLEITUNG
-            } else {
-                errorField.innerText = "Falscher Login oder Code.";
-                errorField.style.display = "block";
-            }
+            const data = await res.json();
+            if(data.success) {
+                localStorage.setItem('user', username);
+                localStorage.setItem('code', code);
+                if(data.isAdmin) localStorage.setItem('isAdmin', 'true');
+                window.location.href = '/app';
+            } else { alert("Fehler!"); }
         }
     </script>
 </body>

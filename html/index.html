@@ -67,7 +67,8 @@
     <script>
         const socket = io();
         const user = localStorage.getItem('disnord_user') || 'Gast';
-
+        if(!localStorage.getItem('user')) window.location.href = '/login';
+        
         // Nachrichten empfangen
         socket.on('chat-message', (msg) => {
             const div = document.createElement('div');
