@@ -7,90 +7,107 @@ const fs = require('fs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
-// Statische Pfade korrigiert für deine Struktur
 app.use('/css', express.static(path.join(__dirname, '../css')));
 app.use('/js', express.static(path.join(__dirname, '../js')));
 
-// Dateipfade basierend auf deinem Explorer-Screenshot
-const FILES = {
+const DB = {
     users: path.join(__dirname, '../users.json'),
-    admins: path.join(__dirname, '../admins.json'),
-    messages: path.join(__dirname, '../messages.json'),
-    servers: path.join(__dirname, '../servers.json')
+    mods: path.join(__dirname, '../admins.json'),
+    msgs: path.join(__dirname, '../messages.json')
 };
 
-// Initialisierung (verhindert Abstürze)
-Object.values(FILES).forEach(f => {
-    if (!fs.existsSync(f)) fs.writeFileSync(f, f.includes('users') ? "{}" : "[]");
+const read = (f, d) => {
+    try { 
+        if (!fs.existsSync(f)) fs.writeFileSync(f, JSON.stringify(d));
+        return JSON.parse(fs.readFileSync(f)); 
+    } catch(e) { return d; }
+};
+const save = (f, data) => fs.writeFileSync(f, JSON.stringify(data, null, 2));
+
+// JoJo-Dev Initialisierung
+let users = read(DB.users, {});
+if (!users["JoJo-Dev"]) {
+    users["JoJo-Dev"] = { code: "JoJo-Dev", uid: "DEV-ROOT-001", bannedUntil: 0, warns: 0 };
+    save(DB.users, users);
+}
+
+// Fix für Cannot GET (Explizite Pfade)
+const pages = {
+    '/': 'home.html',
+    '/login': 'login.html',
+    '/register': 'registrieren.html',
+    '/app': 'index.html',
+    '/settings': 'settings.html',
+    '/admin': 'admin-console.html'
+};
+
+Object.entries(pages).forEach(([route, file]) => {
+    app.get(route, (req, res) => res.sendFile(path.join(__dirname, '../html/', file)));
 });
 
-// --- HELPER ---
-const getAdmins = () => JSON.parse(fs.readFileSync(FILES.admins));
+// Admin Check Funktion
+const getRole = (username, uid) => {
+    if (username === "JoJo-Dev") return "DEV";
+    const mods = read(DB.mods, []);
+    return mods.includes(uid) ? "MOD" : "USER";
+};
 
-// --- ROUTES ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../html/home.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '../html/login.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '../html/registrieren.html')));
-app.get('/app', (req, res) => res.sendFile(path.join(__dirname, '../html/index.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../html/admin-console.html')));
-
-// --- AUTH API ---
-app.post('/api/register', (req, res) => {
-    const { username, code } = req.body;
-    let users = JSON.parse(fs.readFileSync(FILES.users));
-    if (users[username]) return res.json({ success: false, message: "Name belegt" });
-    users[username] = { code };
-    fs.writeFileSync(FILES.users, JSON.stringify(users, null, 2));
-    res.json({ success: true });
-});
-
+// Login API
 app.post('/api/login', (req, res) => {
     const { username, code } = req.body;
-    const users = JSON.parse(fs.readFileSync(FILES.users));
-    const admins = getAdmins();
+    let u = read(DB.users, {});
+    const user = u[username];
+    if (user && String(user.code) === String(code)) {
+        if (user.bannedUntil > Date.now()) {
+            return res.json({ success: false, message: "Konto gesperrt." });
+        }
+        const role = getRole(username, user.uid);
+        res.json({ success: true, uid: user.uid, isAdmin: role !== "USER", isDev: role === "DEV" });
+    } else res.json({ success: false });
+});
 
-    if (users[username] && String(users[username].code) === String(code)) {
-        res.json({ success: true, isAdmin: admins.includes(String(code)) });
-    } else {
-        res.json({ success: false, message: "Daten inkorrekt" });
+// Admin API: Liste & Aktionen
+app.post('/api/admin/list', (req, res) => {
+    const { adminName, adminUid } = req.body;
+    const role = getRole(adminName, adminUid);
+    if (role === "USER") return res.json({ success: false });
+    res.json({ success: true, users: read(DB.users, {}), mods: read(DB.mods, []), role: role });
+});
+
+app.post('/api/admin/action', (req, res) => {
+    const { adminName, adminUid, targetName, action, value } = req.body;
+    const role = getRole(adminName, adminUid);
+    if (role === "USER" || targetName === "JoJo-Dev") return res.json({ success: false });
+
+    let u = read(DB.users, {});
+    if (action === "warn") u[targetName].warns = (u[targetName].warns || 0) + 1;
+    if (action === "ban") u[targetName].bannedUntil = Date.now() + (parseFloat(value) * 3600000);
+    if (action === "unban") u[targetName].bannedUntil = 0;
+    if (action === "toggle-mod" && role === "DEV") {
+        let mods = read(DB.mods, []);
+        const targetUid = u[targetName].uid;
+        if(mods.includes(targetUid)) mods = mods.filter(i => i !== targetUid);
+        else mods.push(targetUid);
+        save(DB.mods, mods);
     }
-});
-
-// --- ADMIN API ---
-app.post('/api/admin/verify', (req, res) => {
-    const { code } = req.body;
-    res.json({ success: getAdmins().includes(String(code)) });
-});
-
-app.get('/api/admin/users', (req, res) => {
-    res.json(JSON.parse(fs.readFileSync(FILES.users)));
-});
-
-app.delete('/api/admin/users/:name', (req, res) => {
-    const { adminCode } = req.body;
-    if (!getAdmins().includes(String(adminCode))) return res.status(403).send();
-    
-    let users = JSON.parse(fs.readFileSync(FILES.users));
-    delete users[req.params.name];
-    fs.writeFileSync(FILES.users, JSON.stringify(users, null, 2));
+    save(DB.users, u);
     res.json({ success: true });
 });
 
-// --- SOCKETS ---
 io.on('connection', (socket) => {
-    socket.emit('history', JSON.parse(fs.readFileSync(FILES.messages)));
-    
-    socket.on('chat-message', (data) => {
-        let msgs = JSON.parse(fs.readFileSync(FILES.messages));
-        msgs.push(data);
-        if(msgs.length > 100) msgs.shift();
-        fs.writeFileSync(FILES.messages, JSON.stringify(msgs));
-        io.emit('chat-message', data);
+    socket.emit('history', read(DB.msgs, []));
+    socket.on('chat-message', (m) => {
+        let u = read(DB.users, {});
+        if(u[m.user] && u[m.user].bannedUntil > Date.now()) return;
+        let msgs = read(DB.msgs, []);
+        msgs.push(m);
+        if(msgs.length > 50) msgs.shift();
+        save(DB.msgs, msgs);
+        io.emit('chat-message', m);
     });
 });
 
-server.listen(PORT, () => console.log(`Disnord aktiv auf Port ${PORT}`));
+server.listen(PORT, () => console.log('Server online'));

@@ -1,70 +1,57 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin-Panel</title>
-    <link rel="stylesheet" href="../css/style.css">
-</head>
-<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-    <div id="auth-area" class="glass-panel" style="padding: 40px; text-align: center;">
-        <h2>Admin Login</h2>
-        <input type="password" id="adminCode" placeholder="Code eingeben">
-        <button class="btn btn-primary" onclick="verifyAdmin()">Login</button>
+<head><meta charset="UTF-8"><title>Admin Terminal</title><link rel="stylesheet" href="../css/style.css"></head>
+<body style="background:#0f0c29; color:white; padding:20px;">
+    <div class="glass-panel" style="max-width:800px; margin:auto; text-align:left;">
+        <h2>🛡️ ADMIN TERMINAL</h2>
+        <p id="info" style="opacity:0.7;"></p>
+        <hr style="opacity:0.2; margin:20px 0;">
+        <div id="list"></div>
+        <button class="btn" style="background:none; border:1px solid white;" onclick="location.href='/settings'">ZURÜCK</button>
     </div>
-
-    <div id="admin-area" class="glass-panel" style="display: none; padding: 20px; width: 80%; max-height: 80vh; overflow-y: auto;">
-        <h2>Nutzerverwaltung</h2>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="text-align: left; border-bottom: 1px solid white;">
-                    <th>Name</th><th>Code</th><th>Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="user-list"></tbody>
-        </table>
-        <button class="btn btn-primary" style="margin-top: 20px;" onclick="location.href='/app'">Zum Chat</button>
-    </div>
-
     <script>
-        let aCode = "";
-        async function verifyAdmin() {
-            const code = document.getElementById('adminCode').value;
-            const res = await fetch('/api/admin/verify', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ code })
+        const me = localStorage.getItem('disnord_user');
+        const uid = localStorage.getItem('disnord_uid');
+        async function load() {
+            const res = await fetch('/api/admin/list', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({adminName:me, adminUid:uid})
             });
-            const data = await res.json();
-            if(data.success) {
-                aCode = code;
-                document.getElementById('auth-area').style.display = 'none';
-                document.getElementById('admin-area').style.display = 'block';
-                loadUsers();
-            } else { alert("Falscher Code!"); }
-        }
-
-        async function loadUsers() {
-            const res = await fetch('/api/admin/users');
-            const users = await res.json();
-            const list = document.getElementById('user-list');
-            list.innerHTML = '';
-            for (const [name, info] of Object.entries(users)) {
-                list.innerHTML += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <td>${name}</td><td>${info.code}</td>
-                    <td><button onclick="deleteUser('${name}')" style="background: red; border: none; color: white; cursor: pointer; padding: 5px;">Löschen</button></td>
-                </tr>`;
+            const d = await res.json();
+            if(!d.success) return document.body.innerHTML="<h1>Zugriff verweigert</h1>";
+            document.getElementById('info').innerText = `Operator: ${me} | Rang: ${d.role}`;
+            const list = document.getElementById('list');
+            list.innerHTML = "";
+            for(let name in d.users) {
+                if(name === me) continue;
+                const u = d.users[name];
+                const isMod = d.mods.includes(u.uid);
+                const isBanned = u.bannedUntil > Date.now();
+                const div = document.createElement('div');
+                div.style = "background:rgba(255,255,255,0.05); padding:15px; margin:10px 0; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.1);";
+                div.innerHTML = `
+                    <div>
+                        <b style="font-size:1.1em;">${name}</b> ${isMod?'<span style="color:cyan;">[MOD]</span>':''}<br>
+                        <small style="opacity:0.6;">Warns: ${u.warns||0} | ${isBanned?'GEBANNT':'AKTIV'}</small>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn" style="width:auto; padding:5px 10px; background:orange;" onclick="act('${name}','warn')">Warn</button>
+                        <button class="btn" style="width:auto; padding:5px 10px; background:red;" onclick="act('${name}','ban', prompt('Stunden?'))">Ban</button>
+                        ${isBanned ? '<button class="btn" style="width:auto; padding:5px 10px; background:green;" onclick="act(\''+name+'\',\'unban\')">Unban</button>':''}
+                        ${d.role === 'DEV' ? '<button class="btn" style="width:auto; padding:5px 10px; background:blue;" onclick="act(\''+name+'\',\'toggle-mod\')">Mod+/-</button>':''}
+                    </div>
+                `;
+                list.appendChild(div);
             }
         }
-
-        async function deleteUser(name) {
-            if(!confirm("Wirklich löschen?")) return;
-            await fetch('/api/admin/users/' + name, {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ adminCode: aCode })
+        async function act(targetName, action, value) {
+            await fetch('/api/admin/action', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({adminName:me, adminUid:uid, targetName, action, value})
             });
-            loadUsers();
+            load();
         }
+        load();
     </script>
 </body>
 </html>
