@@ -10,7 +10,6 @@ const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
-// Statische Dateien explizit freigeben
 app.use('/css', express.static(path.join(__dirname, '../css')));
 app.use('/js', express.static(path.join(__dirname, '../js')));
 
@@ -28,53 +27,59 @@ const read = (f, d) => {
 };
 const save = (f, data) => fs.writeFileSync(f, JSON.stringify(data, null, 2));
 
-// JoJo-Dev Schutz
+// Initialisierung des Dev-Accounts
 let users = read(DB.users, {});
 if (!users["JoJo-Dev"]) {
-    users["JoJo-Dev"] = { code: "JoJo-Dev", uid: "DEV-ROOT-001", bannedUntil: 0, warns: 0 };
+    users["JoJo-Dev"] = { 
+        code: "JoJo-Dev", 
+        uid: "DEV-ROOT", 
+        bannedUntil: 0, 
+        warns: 0 
+    };
     save(DB.users, users);
 }
 
-// --- ROUTING FIX (Das Herzstück gegen Bugs) ---
-// Wir definieren genau, welche URL zu welcher Datei führt.
+// Stabile Routen
 const routes = {
     '/': 'home.html',
     '/login': 'login.html',
     '/register': 'registrieren.html',
     '/app': 'index.html',
     '/settings': 'settings.html',
-    '/admin': 'admin-console.html',
-    '/create-server': 'create-server.html',
-    '/dm-search': 'dm-search.html'
+    '/admin': 'admin-console.html'
 };
 
 Object.entries(routes).forEach(([url, file]) => {
-    app.get(url, (req, res) => {
-        res.sendFile(path.join(__dirname, '../html/', file));
-    });
+    app.get(url, (req, res) => res.sendFile(path.join(__dirname, '../html/', file)));
 });
 
-// Fallback: Wenn eine Seite nicht existiert, gehe zur Home-Seite
-app.get('*', (req, res) => {
-    if(req.accepts('html')) res.sendFile(path.join(__dirname, '../html/home.html'));
-});
-
-// --- API ---
+// Admin-Rechte Logik
 const getRole = (username, uid) => {
     if (username === "JoJo-Dev") return "DEV";
     const mods = read(DB.mods, []);
     return mods.includes(uid) ? "MOD" : "USER";
 };
 
+// API Endpunkte
 app.post('/api/login', (req, res) => {
     const { username, code } = req.body;
     let u = read(DB.users, {});
     const user = u[username];
     if (user && String(user.code) === String(code)) {
-        if (user.bannedUntil > Date.now()) return res.json({ success: false, message: "Gebannt" });
+        if (user.bannedUntil > Date.now()) return res.json({ success: false, message: "Bann aktiv" });
         const role = getRole(username, user.uid);
-        res.json({ success: true, uid: user.uid, isAdmin: role !== "USER", isDev: role === "DEV" });
+        res.json({ success: true, uid: user.uid, role: role });
     } else res.json({ success: false });
+});
+
+app.post('/api/register', (req, res) => {
+    const { username, code } = req.body;
+    let u = read(DB.users, {});
+    if (u[username]) return res.json({ success: false });
+    const uid = "DN-" + Math.random().toString(36).substr(2, 4).toUpperCase();
+    u[username] = { code: String(code), uid: uid, bannedUntil: 0, warns: 0 };
+    save(DB.users, u);
+    res.json({ success: true, uid: uid });
 });
 
 app.post('/api/admin/list', (req, res) => {
@@ -115,4 +120,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => console.log('Routing Fixed & Server Online'));
+server.listen(PORT, () => console.log('Server läuft auf Port ' + PORT));

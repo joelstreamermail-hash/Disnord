@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Admin Terminal</title><link rel="stylesheet" href="../css/style.css"></head>
-<body style="background:#0f0c29; color:white; padding:20px;">
-    <div class="glass-panel" style="max-width:800px; margin:auto; text-align:left;">
-        <h2>🛡️ ADMIN TERMINAL</h2>
-        <p id="info" style="opacity:0.7;"></p>
-        <hr style="opacity:0.2; margin:20px 0;">
-        <div id="list"></div>
-        <button class="btn" style="background:none; border:1px solid white;" onclick="location.href='/settings'">ZURÜCK</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body style="padding:20px; overflow-y:auto;">
+    <div style="max-width:1000px; margin:auto;">
+        <div class="glass-panel" style="width:100%; max-width:none; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">🛡️ ADMIN</h2>
+            <button class="btn" style="width:auto; padding:5px 15px;" onclick="location.href='/settings'">ZURÜCK</button>
+        </div>
+        <div id="user-grid" class="admin-grid"></div>
     </div>
     <script>
         const me = localStorage.getItem('disnord_user');
@@ -15,39 +20,36 @@
         async function load() {
             const res = await fetch('/api/admin/list', {
                 method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({adminName:me, adminUid:uid})
+                body:JSON.stringify({adminName: me, adminUid: uid})
             });
             const d = await res.json();
-            if(!d.success) return document.body.innerHTML="<h1>Zugriff verweigert</h1>";
-            document.getElementById('info').innerText = `Operator: ${me} | Rang: ${d.role}`;
-            const list = document.getElementById('list');
-            list.innerHTML = "";
+            if(!d.success) return document.body.innerHTML = "Zugriff verweigert";
+            const grid = document.getElementById('user-grid');
+            grid.innerHTML = "";
             for(let name in d.users) {
                 if(name === me) continue;
                 const u = d.users[name];
                 const isMod = d.mods.includes(u.uid);
                 const isBanned = u.bannedUntil > Date.now();
-                const div = document.createElement('div');
-                div.style = "background:rgba(255,255,255,0.05); padding:15px; margin:10px 0; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.1);";
-                div.innerHTML = `
-                    <div>
-                        <b style="font-size:1.1em;">${name}</b> ${isMod?'<span style="color:cyan;">[MOD]</span>':''}<br>
-                        <small style="opacity:0.6;">Warns: ${u.warns||0} | ${isBanned?'GEBANNT':'AKTIV'}</small>
+                const card = document.createElement('div');
+                card.className = "glass-panel";
+                card.style = "width:100%; text-align:left; padding:15px;";
+                card.innerHTML = `
+                    <b>${name}</b> <small>${u.uid}</small> ${isMod ? '[MOD]' : ''}<br>
+                    <small>Status: ${isBanned ? 'BANNED' : 'OK'}</small>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <button class="btn" onclick="act('${name}','warn')">Warn</button>
+                        <button class="btn" style="background:red;" onclick="act('${name}','ban', prompt('Stunden?'))">Ban</button>
                     </div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn" style="width:auto; padding:5px 10px; background:orange;" onclick="act('${name}','warn')">Warn</button>
-                        <button class="btn" style="width:auto; padding:5px 10px; background:red;" onclick="act('${name}','ban', prompt('Stunden?'))">Ban</button>
-                        ${isBanned ? '<button class="btn" style="width:auto; padding:5px 10px; background:green;" onclick="act(\''+name+'\',\'unban\')">Unban</button>':''}
-                        ${d.role === 'DEV' ? '<button class="btn" style="width:auto; padding:5px 10px; background:blue;" onclick="act(\''+name+'\',\'toggle-mod\')">Mod+/-</button>':''}
-                    </div>
+                    ${d.role === 'DEV' ? `<button class="btn" style="margin-top:5px;" onclick="act('${name}','toggle-mod')">${isMod ? 'Entmodden' : 'Mod machen'}</button>` : ''}
                 `;
-                list.appendChild(div);
+                grid.appendChild(card);
             }
         }
         async function act(targetName, action, value) {
             await fetch('/api/admin/action', {
                 method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({adminName:me, adminUid:uid, targetName, action, value})
+                body:JSON.stringify({adminName: me, adminUid: uid, targetName, action, value})
             });
             load();
         }

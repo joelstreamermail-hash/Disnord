@@ -1,24 +1,28 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Settings</title><link rel="stylesheet" href="../css/style.css"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
 <body class="flex-center">
-    <div class="glass-panel" style="width:90%; max-width:400px;">
+    <div class="glass-panel">
         <h2>EINSTELLUNGEN</h2>
-        <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; margin:20px 0; text-align:left;">
+        <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; margin:15px 0;">
             <small>Deine ID:</small>
-            <div id="uid-disp" style="font-family:monospace; color:var(--primary);">...</div>
+            <div id="my-uid" style="font-family:monospace; color:cyan; font-size:1.2em;">-</div>
         </div>
-        <div id="adm-btn" style="display:none; margin-bottom:15px;">
-            <button class="btn" style="border:1px solid cyan; background:rgba(0,255,255,0.1);" onclick="location.href='/admin'">🛡️ ADMIN PANEL</button>
+        <div id="adm-btn" style="display:none; margin-bottom:10px;">
+            <button class="btn" style="border:1px solid cyan;" onclick="location.href='/admin'">🛡️ ADMIN PANEL</button>
         </div>
         <button class="btn" onclick="location.href='/app'">ZURÜCK</button>
-        <button class="btn" style="margin-top:10px; color:red;" onclick="localStorage.clear(); location.href='/login'">LOGOUT</button>
+        <button class="btn" style="margin-top:10px; background:rgba(255,0,0,0.2);" onclick="localStorage.clear(); location.href='/login'">LOGOUT</button>
     </div>
     <script>
-        document.getElementById('uid-disp').innerText = localStorage.getItem('disnord_uid');
-        if(localStorage.getItem('disnord_is_admin') === 'true' || localStorage.getItem('disnord_is_dev') === 'true') {
-            document.getElementById('adm-btn').style.display = 'block';
-        }
+        document.getElementById('my-uid').innerText = localStorage.getItem('disnord_uid');
+        const role = localStorage.getItem('disnord_role');
+        if(role === 'MOD' || role === 'DEV') document.getElementById('adm-btn').style.display = 'block';
     </script>
 </body>
 </html>
