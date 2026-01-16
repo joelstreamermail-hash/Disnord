@@ -68,3 +68,71 @@ input:focus { border-color: var(--primary-color); }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+/* Profil-Karte unten links */
+.profile-card {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 20px 10px 10px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.profile-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.2em;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.profile-name {
+    font-weight: bold;
+    color: #fff;
+    font-size: 0.95em;
+}
+
+.profile-status {
+    font-size: 0.75em;
+    color: var(--primary);
+}
+
+/* Mobile Anpassung: Damit es nicht über dem Chat-Input liegt */
+@media (max-width: 600px) {
+    .profile-card {
+        bottom: auto;
+        top: 15px;
+        left: 15px;
+        padding: 8px 15px 8px 8px;
+    }
+    .profile-avatar { width: 35px; height: 35px; font-size: 1em; }
+}

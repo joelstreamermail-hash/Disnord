@@ -10,6 +10,7 @@ const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
+// Statische Dateien explizit freigeben
 app.use('/css', express.static(path.join(__dirname, '../css')));
 app.use('/js', express.static(path.join(__dirname, '../js')));
 
@@ -27,49 +28,55 @@ const read = (f, d) => {
 };
 const save = (f, data) => fs.writeFileSync(f, JSON.stringify(data, null, 2));
 
-// JoJo-Dev Initialisierung
+// JoJo-Dev Schutz
 let users = read(DB.users, {});
 if (!users["JoJo-Dev"]) {
     users["JoJo-Dev"] = { code: "JoJo-Dev", uid: "DEV-ROOT-001", bannedUntil: 0, warns: 0 };
     save(DB.users, users);
 }
 
-// Fix für Cannot GET (Explizite Pfade)
-const pages = {
+// --- ROUTING FIX (Das Herzstück gegen Bugs) ---
+// Wir definieren genau, welche URL zu welcher Datei führt.
+const routes = {
     '/': 'home.html',
     '/login': 'login.html',
     '/register': 'registrieren.html',
     '/app': 'index.html',
     '/settings': 'settings.html',
-    '/admin': 'admin-console.html'
+    '/admin': 'admin-console.html',
+    '/create-server': 'create-server.html',
+    '/dm-search': 'dm-search.html'
 };
 
-Object.entries(pages).forEach(([route, file]) => {
-    app.get(route, (req, res) => res.sendFile(path.join(__dirname, '../html/', file)));
+Object.entries(routes).forEach(([url, file]) => {
+    app.get(url, (req, res) => {
+        res.sendFile(path.join(__dirname, '../html/', file));
+    });
 });
 
-// Admin Check Funktion
+// Fallback: Wenn eine Seite nicht existiert, gehe zur Home-Seite
+app.get('*', (req, res) => {
+    if(req.accepts('html')) res.sendFile(path.join(__dirname, '../html/home.html'));
+});
+
+// --- API ---
 const getRole = (username, uid) => {
     if (username === "JoJo-Dev") return "DEV";
     const mods = read(DB.mods, []);
     return mods.includes(uid) ? "MOD" : "USER";
 };
 
-// Login API
 app.post('/api/login', (req, res) => {
     const { username, code } = req.body;
     let u = read(DB.users, {});
     const user = u[username];
     if (user && String(user.code) === String(code)) {
-        if (user.bannedUntil > Date.now()) {
-            return res.json({ success: false, message: "Konto gesperrt." });
-        }
+        if (user.bannedUntil > Date.now()) return res.json({ success: false, message: "Gebannt" });
         const role = getRole(username, user.uid);
         res.json({ success: true, uid: user.uid, isAdmin: role !== "USER", isDev: role === "DEV" });
     } else res.json({ success: false });
 });
 
-// Admin API: Liste & Aktionen
 app.post('/api/admin/list', (req, res) => {
     const { adminName, adminUid } = req.body;
     const role = getRole(adminName, adminUid);
@@ -88,9 +95,8 @@ app.post('/api/admin/action', (req, res) => {
     if (action === "unban") u[targetName].bannedUntil = 0;
     if (action === "toggle-mod" && role === "DEV") {
         let mods = read(DB.mods, []);
-        const targetUid = u[targetName].uid;
-        if(mods.includes(targetUid)) mods = mods.filter(i => i !== targetUid);
-        else mods.push(targetUid);
+        const tUid = u[targetName].uid;
+        mods.includes(tUid) ? mods = mods.filter(i => i !== tUid) : mods.push(tUid);
         save(DB.mods, mods);
     }
     save(DB.users, u);
@@ -103,11 +109,10 @@ io.on('connection', (socket) => {
         let u = read(DB.users, {});
         if(u[m.user] && u[m.user].bannedUntil > Date.now()) return;
         let msgs = read(DB.msgs, []);
-        msgs.push(m);
-        if(msgs.length > 50) msgs.shift();
+        msgs.push(m); if(msgs.length > 50) msgs.shift();
         save(DB.msgs, msgs);
         io.emit('chat-message', m);
     });
 });
 
-server.listen(PORT, () => console.log('Server online'));
+server.listen(PORT, () => console.log('Routing Fixed & Server Online'));
